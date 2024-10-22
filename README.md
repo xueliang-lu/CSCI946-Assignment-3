@@ -13,6 +13,12 @@ Link1: https://uowmailedu-my.sharepoint.com/:u:/g/personal/leiw_uow_edu_au/Ece1Y
 
 Link2: https://mhteaching.its.uow.edu.au/index.php/s/eoLbFKxpqEfKp5k
 
+The dataset we are going to use are as following:
+ ```bash
+train_data_path = "data/features/train_eva02_large_patch14_448.mim_m38m_ft_in22k_in1k.csv"
+val_data_path_1 = "data/features/val_eva02_large_patch14_448.mim_m38m_ft_in22k_in1k.csv"
+val_data_path_2 = "data/features/v2_eva02_large_patch14_448.mim_m38m_ft_in22k_in1k.csv"
+```
 Instructions:
 1. Amend data directories in all codes to fit your own dataset location
 2. Run the following file to train the lightgbm classifier and save it to alex_lgbm_model.joblib for further usage. There is a part of codes are commented out which can use to fine tune hyperparameter.
