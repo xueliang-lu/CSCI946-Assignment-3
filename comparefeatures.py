@@ -46,6 +46,10 @@ X_val_1, y_val_1 = load_and_drop_columns(val_data_path_1)
 logging.info("Loading validation dataset 2")
 X_val_2, y_val_2 = load_and_drop_columns(val_data_path_2)
 
+'''
+Plot model feature importance and permutation importance for each val sets
+'''
+
 # Step 1: Make predictions for validation set 1
 logging.info("Making predictions for validation set 1")
 y_pred_val1 = best_lgbm.predict(X_val_1)
@@ -92,7 +96,7 @@ perm_importance_val2['relative_importance'] = perm_importance_val2['importance_m
 # Get top 50 model features
 top_50_features_v1 = perm_importance_val1.nlargest(50, 'importance_mean')
 
-# Step 4: Plot top 50 model feature importances
+# Plot top 50 model feature importances
 # Plotting feature importances
 plt.figure(figsize=(12, 6))
 plt.barh(range(len(top_50_features_v1)), top_50_features_v1['relative_importance'], color='skyblue')
@@ -106,7 +110,7 @@ plt.show()
 # Get top 50 model features
 top_50_features_v2 = perm_importance_val2.nlargest(50, 'importance_mean')
 
-# Step 4: Plot top 50 model feature importances
+# Plot top 50 model feature importances
 # Plotting feature importances
 plt.figure(figsize=(12, 6))
 plt.barh(range(len(top_50_features_v2)), top_50_features_v2['relative_importance'], color='skyblue')
@@ -116,22 +120,28 @@ plt.title('Top 50 Feature Importances (Validation Set 2)')
 plt.gca().invert_yaxis()  # Invert y-axis for better readability
 plt.show()
 
-# Step 2: Merge the two DataFrames based on 'feature'
+
+
+'''
+Clutering importance
+'''
+
+# Step 1: Merge the two DataFrames based on 'feature'
 merged_df = pd.merge(perm_importance_val1[['feature', 'relative_importance']], 
                      perm_importance_val2[['feature', 'relative_importance']], 
                      on='feature', 
                      suffixes=('_val1', '_val2'))
 
-# Step 3: Use relative importance for clustering
+# Step 2: Use relative importance for clustering
 X = merged_df[['relative_importance_val1', 'relative_importance_val2']].values
 
-# Step 4: Apply K-Means clustering
+# Step 3: Apply K-Means clustering
 kmeans = KMeans(n_clusters=3, random_state=0).fit(X)
 
-# Step 5: Add the cluster labels to the merged DataFrame
+# Step 4: Add the cluster labels to the merged DataFrame
 merged_df['cluster'] = kmeans.labels_
 
-# Step 6: Plot the clusters
+# Step 5: Plot the clusters
 plt.figure(figsize=(8, 6))
 plt.scatter(merged_df['relative_importance_val1'], merged_df['relative_importance_val2'], 
             c=merged_df['cluster'], cmap='viridis', s=100)
@@ -141,8 +151,11 @@ plt.title('KMeans Clustering of Feature Importance (Val1 vs Val2)')
 plt.colorbar(label='Cluster')
 plt.show()
 
+'''
+Compare distribution between val sets under feature 170, which is the highest importance feature of both sets
+'''
 # Step 1: Extract Feature 170
-feature_index = 170  # Adjust based on zero-based index
+feature_index = 170 
 feature_name = X_val_1.columns[feature_index]  # Get the name of feature 170
 
 feature_170_val1 = X_val_1.iloc[:, feature_index]  # Feature 170 from validation set 1
@@ -185,7 +198,7 @@ X_val_1, y_val_1 = load_and_drop_columns(val_data_path_1)
 X_val_2, y_val_2 = load_and_drop_columns(val_data_path_2)
 
 # Extract feature 170
-feature_index = 170  # Adjust the index as necessary (0-indexed)
+feature_index = 170  
 feature_170_val1 = X_val_1.iloc[:, feature_index]
 feature_170_val2 = X_val_2.iloc[:, feature_index]
 
