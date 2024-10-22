@@ -1,0 +1,146 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[top=1.8cm,bottom=2.0cm,right=1.35cm,left=1.35cm]{geometry}
+\usepackage{url}
+\usepackage[natbibapa]{apacite}
+\bibliographystyle{apacite}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[onehalfspacing]{setspace}
+\usepackage{multirow}
+\usepackage{subcaption} % Add this in your preamble
+
+\usepackage{lipsum}% this geenerates fictitious text for sample
+%opening
+\title{Assignment 3\\ Exploring Feature Extraction and Classification in Big Data: Analyzing ImageNet and ImageNetV2 for Generalization Performance}
+\author{Group 19}
+\date{CSCI446/946 Big Data Analytics\\
+Oct, 2024}
+
+\begin{document}
+\maketitle
+\begin{table}[hbt!]
+    \centering
+    \begin{tabular}{llp{6cm}c} 
+         \multicolumn{4}{c}{\textbf{Member Contribution Form}}\\ \hline 
+         ID&  Name&  Contribution details& Rate \% 
+\\ \hline 
+         8141198&  Zhizhen Zhou& All parts of the project & 100 
+\\ 
+         8097471&  Xueliang Lu& All parts of the project & 100 
+\\  
+         8483967&  Anthony Autore& All parts of the project & 100 
+\\ 
+         6506069&  Xinke Wang& All parts of the project & 100 
+\\ 
+         8739146&  Wenhui Li& All parts of the project & 100 
+\\  
+         7605857&  Changpu Meng& All parts of the project & 100 
+\\  
+         7684241&  Qingming Dai& All parts of the project & 100 
+\\  
+         7670370&  Zeyu Shang& All parts of the project & 100 
+\\ \hline
+    \end{tabular}
+\end{table}
+
+\onehalfspacing
+
+    \begin{abstract}
+   
+    \end{abstract}
+\newpage
+\tableofcontents
+\newpage
+
+
+
+\section{Task 1: Big Data Analytics Life-cycle Project Design}
+
+This project focuses on feature extraction and classification for large-scale image recognition tasks, specifically targeting the analysis and evaluation of classifier performance on the ImageNet and ImageNetV2 validation datasets. The aim is to explore the generalization capabilities of machine learning models across different validation sets and to identify features that contribute most to classification accuracy.
+
+\subsection{Discovery}
+\paragraph{Problem definition:}  
+With the growth of deep learning in computer vision, models trained on large datasets such as ImageNet often struggle with generalization when applied to different datasets, such as ImageNetV2. Understanding why some features work well on one dataset and not the other is crucial for improving model robustness.
+
+\paragraph{Objective:}  
+The project aims to use ImageNet as the training dataset to build machine learning models that accurately classify images from the ImageNet and ImageNetV2 datasets. We will identify the most important features across these datasets and investigate their influence on classification performance.
+
+\paragraph{Key stakeholders and benefits:}  
+This project benefits AI researchers and data scientists working on large-scale image classification. By understanding feature importance and generalization, researchers can improve model robustness. Stakeholders include organizations using machine learning for visual recognition tasks, and academic institutions exploring generalization in AI.
+
+\paragraph{Dataset overview:}
+The datasets used include extracted features from the ImageNet training set and two validation sets: ImageNet (test set 1) and ImageNetV2 (test set 2). Each dataset contains 1,024 features per image, with 1,000 object classes. The datasets are provided in CSV format, where each row represents an image and the columns represent extracted features.
+
+\subsection{Data preparation}
+\paragraph{Data collection:}  
+The data is pre-extracted from a pretrained large image recognition model and saved in CSV format. It includes features for the training, validation, and testing sets, specifically:
+\begin{itemize}
+    \item \texttt{train\_eva02\_large\_patch14\_448.mim\_m38m\_ft\_in22k\_in1k.csv}
+    \item \texttt{val\_eva02\_large\_patch14\_448.mim\_m38m\_ft\_in22k\_in1k.csv}
+    \item \texttt{v2\_eva02\_large\_patch14\_448.mim\_m38m\_ft\_in22k\_in1k.csv}
+\end{itemize}
+
+\paragraph{Data cleaning:}  
+
+
+\paragraph{Numerical data pre-processing:}  
+
+\paragraph{Data integration:}  
+The data from the different datasets is organized into separate dataframes for validation. This ensures that each dataset can be independently analyzed for feature importance and classification accuracy.
+
+\subsection{Model planning}
+\paragraph{Feature selection:}  
+Feature importance will be analyzed by evaluating how each feature contributes to classification accuracy across both validation sets. We will select key features that show significant variance between test set 1 (ImageNet) and test set 2 (ImageNetV2).
+
+\paragraph{Algorithm selection:}  
+\begin{itemize}
+    \item \textbf{Classification algorithms:} We will evaluate LightGBM classifiers, to predict image classes based on deep features. This models will be tested across both validation sets to compare their generalization performance.
+    \item \textbf{Clustering algorithms:} K-means clustering will be used to group similar features and identify patterns that differentiate ImageNet and ImageNetV2 samples. This will help in visualizing feature distributions across datasets.
+\end{itemize}
+
+\paragraph{Evaluation criteria:}  
+The models will be evaluated based on their classification accuracy, precision, recall, and F1-score. Additionally, feature importance metrics from LightGBM will provide insights into the most influential features.
+
+\subsection{Model building}
+\paragraph{Data splitting:}  
+We will split the training dataset into training (80\%) and testing (20\%) sets to ensure adequate model hyper-parameter fine tuning validation. The training set will be used to train the classifier, and the validation sets (ImageNet and ImageNetV2) will be used to evaluate model performance.
+
+\paragraph{Training:}  
+The models will be trained using deep features extracted from the images. Due to the large size of the dataset (1,280,000 samples with 1,024 features), model optimization will be a key focus, with a particular emphasis on feature selection to reduce computational complexity.
+
+\subsection{Communicate Results}
+\paragraph{Visualization:}
+Results will be visualized using feature importance plots to highlight which features contribute the most to model performance across the two validation sets. Confusion matrices will also be used to visualize classification errors, while ROC curves and AUC scores will help illustrate the balance between true positive and false positive rates.
+
+\paragraph{Reporting:}  
+A comprehensive report will be prepared detailing the methodology, model evaluations, and key findings. Special attention will be given to the differences between the two test sets and the generalization capabilities of the model. Feature clustering results will also be included to highlight patterns in the dataset.
+
+\subsection{Operationalize}
+\paragraph{Integration:}  
+Although deployment is not part of the assignment, the insights from this project can be leveraged for future integration into image classification workflows, enabling better generalization across datasets.
+
+\paragraph{Monitoring:}  
+Establish a framework for continuous model monitoring and evaluation to ensure that the model generalizes effectively across new data.
+
+\paragraph{Actionable Use:}  
+Design strategies for utilizing the findings to improve the robustness of image classification models in practical applications.
+
+
+\section{Task 2: Main Task Analysis}
+
+
+
+
+\section{Task 3: Conclusions and Outlook}
+
+
+
+
+\newpage
+\nocite{*}
+\bibliography{report_template}
+
+\end{document}
