@@ -40,26 +40,6 @@ X_val_2, y_val_2 = load_and_drop_columns(val_data_path_2)
 X_train, X_internal_val, y_train, y_internal_val = train_test_split(X_train_full, y_train_full, test_size=0.2, random_state=42)
 
 
-# param_grid = {
-#     'num_leaves': 31,
-#     'max_depth': 10,
-#     'learning_rate': 0.1,
-#     'n_estimators': 200,
-#     'force_col_wise': True,
-#     'random_state':42,
-#     # 'device': ['gpu'],
-# }
-# param_grid = {
-#     'num_leaves': 15,  
-#     'max_depth': 7,  
-#     'learning_rate': 0.1,
-#     'n_estimators': 200,  # Setting to 200 and still using early stopping
-#     'min_data_in_leaf': 500,
-#     'lambda_l1': 0.1,
-#     'lambda_l2': 0.1,
-#     'random_state': 42,
-# }
-
 # Initialize the LightGBM classifier
 lgbm = lgb.LGBMClassifier()
 # lgbm.fit(X_train, y_train)
@@ -70,54 +50,72 @@ lgbm.fit(
         lgb.early_stopping(stopping_rounds=10,verbose=True),
     ],  # Stops training if no improvement after 10 rounds
 )
-# # Evaluate on the internal validation set
-y_internal_pred = lgbm.predict(X_internal_val)
-# y_internal_proba = lgbm.predict_proba(X_internal_val)[:, 1] 
-# y_pred_proba_1 = lgbm.predict_proba(X_val_1)[:, 1]
-# y_pred_proba_2 = lgbm.predict_proba(X_val_2)[:, 1]
-# # Function to plot ROC curve
-# def plot_roc_curve(y_true, y_proba, dataset_name):
-#     fpr, tpr, _ = roc_curve(y_true, y_proba)
-#     roc_auc = auc(fpr, tpr)
-    
-#     plt.figure()
-#     plt.plot(fpr, tpr, color='blue', lw=2, label=f'ROC curve (area = {roc_auc:.2f})')
-#     plt.plot([0, 1], [0, 1], color='red', lw=2, linestyle='--')  # Diagonal line
-#     plt.xlim([0.0, 1.0])
-#     plt.ylim([0.0, 1.05])
-#     plt.xlabel('False Positive Rate')
-#     plt.ylabel('True Positive Rate')
-#     plt.title(f'ROC Curve - {dataset_name}')
-#     plt.legend(loc='lower right')
-#     plt.grid()
-#     plt.savefig(f'roc_curve_{dataset_name}.png')  # Save the figure
-#     plt.close()  # Close the figure to avoid display
-
-# # Plot ROC curves
-# plot_roc_curve(y_internal_val, y_internal_proba, 'Internal Validation Set')
-# plot_roc_curve(y_val_1, y_pred_proba_1, 'Validation Set 1')
-# plot_roc_curve(y_val_2, y_pred_proba_2, 'Validation Set 2')
-# print("Internal Validation Set Results:")
-# print(classification_report(y_internal_val, y_internal_pred))
-# print("Accuracy:", accuracy_score(y_internal_val, y_internal_pred))
-
-# # Evaluate on the first external validation set
-y_pred_1 = lgbm.predict(X_val_1)
-# print("Validation Set 1 Results:")
-# print(classification_report(y_val_1, y_pred_1))
-# print("Accuracy:", accuracy_score(y_val_1, y_pred_1))
-
-# # Evaluate on the second external validation set
-y_pred_2 = lgbm.predict(X_val_2)
-# print("Validation Set 2 Results:")
-# print(classification_report(y_val_2, y_pred_2))
-# print("Accuracy:", accuracy_score(y_val_2, y_pred_2))
 
 # Save the best model to a file
 model_filename = 'alex_lgbm_model.joblib'
 joblib.dump(lgbm, model_filename)
 print(f"Model saved to {model_filename}")
 
+## Alternatively, you can use the following code to fine tune hyperparameter use GridSearchCV
+# # Define a parameter grid for GridSearchCV
+# param_grid = {
+#     'num_leaves': [15, 31],        # Range of number of leaves
+#     'max_depth': [7, 10, 15],      # Different max depth values
+#     'learning_rate': [0.01, 0.1],  # Test different learning rates
+#     'n_estimators': [100, 200],    # Number of boosting iterations
+#     'min_data_in_leaf': [100, 500],  # Minimum data in one leaf
+#     'lambda_l1': [0.0, 0.1],       # L1 regularization
+#     'lambda_l2': [0.0, 0.1],       # L2 regularization
+#     'random_state': [42]           # Fixed random state for reproducibility
+# }
+
+# # Initialize the LightGBM classifier
+# lgbm = lgb.LGBMClassifier()
+
+# # Set up the GridSearchCV with 5-fold cross-validation using internal validation data
+# grid_search = GridSearchCV(
+#     estimator=lgbm, 
+#     param_grid=param_grid, 
+#     cv=5,  # 5-fold cross-validation
+#     scoring='accuracy',  # Use accuracy as the evaluation metric
+#     verbose=2,  # Show progress during grid search
+#     n_jobs=-1   # Use all available cores for computation
+# )
+
+# # Fit the model using GridSearchCV with internal validation data
+# grid_search.fit(
+#     X_train, y_train, 
+#     eval_set=[(X_internal_val, y_internal_val)], 
+#     eval_metric='multi_logloss',  # Metric for multiclass classification
+#     early_stopping_rounds=10,     # Early stopping after 10 rounds of no improvement
+#     verbose=True
+# )
+
+# # Best parameters from the grid search
+# print("Best parameters found by GridSearchCV:")
+# print(grid_search.best_params_)
+
+# # Best score from the grid search
+# print("Best accuracy score during GridSearchCV:")
+# print(grid_search.best_score_)
+
+# # Save the best model
+# best_model = grid_search.best_estimator_
+# joblib.dump(best_model, 'lightgbm_best_model.joblib')
+# print("Model saved as 'lightgbm_best_model.joblib'")
+
+
+
+
+
+# Evaluate on the internal validation set
+y_internal_pred = lgbm.predict(X_internal_val)
+
+# Evaluate on the first external validation set
+y_pred_1 = lgbm.predict(X_val_1)
+
+# Evaluate on the second external validation set
+y_pred_2 = lgbm.predict(X_val_2)
 # Save results to a text file
 with open('alex_validation_results.txt', 'w') as file:
     # Internal Validation Results
