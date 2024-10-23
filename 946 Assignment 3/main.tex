@@ -59,80 +59,198 @@ Oct, 2024}
 
 \section{Task 1: Big Data Analytics Life-cycle Project Design}
 
-This project focuses on feature extraction and classification for large-scale image recognition tasks, specifically targeting the analysis and evaluation of classifier performance on the ImageNet and ImageNetV2 validation datasets. The aim is to explore the generalization capabilities of machine learning models across different validation sets and to identify features that contribute most to classification accuracy.
+This project focuses on leveraging pretrained deep features from EVA-02 model for large-scale image recognition tasks, specifically targeting the analysis and evaluation of classifier performance on the ImageNet and ImageNetV2 validation datasets. The aim is to explore the generalization capabilities of machine learning models across different validation sets and to identify features that contribute most to classification accuracy.
 
 \subsection{Discovery}
 \paragraph{Problem definition:}  
 With the growth of deep learning in computer vision, models trained on large datasets such as ImageNet often struggle with generalization when applied to different datasets, such as ImageNetV2. Understanding why some features work well on one dataset and not the other is crucial for improving model robustness.
 
 \paragraph{Objective:}  
-The project aims to use ImageNet as the training dataset to build machine learning models that accurately classify images from the ImageNet and ImageNetV2 datasets. We will identify the most important features across these datasets and investigate their influence on classification performance.
+The project aims to use ImageNet as the training dataset to build machine learning models that accurately classify images from the ImageNet and ImageNetV2 validation datasets. We will identify the most important features across these datasets and investigate their influence on classification performance.
 
 \paragraph{Key stakeholders and benefits:}  
-This project benefits AI researchers and data scientists working on large-scale image classification. By understanding feature importance and generalization, researchers can improve model robustness. Stakeholders include organizations using machine learning for visual recognition tasks, and academic institutions exploring generalization in AI.
+This project benefits researchers and data scientists working on large-scale image classification. By understanding feature importance and generalization, researchers can improve model robustness. Stakeholders include organizations using machine learning for visual recognition tasks, and academic institutions exploring generalization in AI.
 
 \paragraph{Dataset overview:}
-The datasets used include extracted features from the ImageNet training set and two validation sets: ImageNet (test set 1) and ImageNetV2 (test set 2). Each dataset contains 1,024 features per image, with 1,000 object classes. The datasets are provided in CSV format, where each row represents an image and the columns represent extracted features.
+The datasets used include extracted features from the ImageNet training set derived using the EVA-02 model, as well as two validation sets: ImageNet (val set 1) and ImageNetV2 (val set 2). The training dataset includes features from 1,281,167 training images, while val set 1 contains 50,000 validation images, and val set 2 contains 10,000 validation images. Each dataset contains 1,024 features per image, with 1,000 object classes. The datasets are provided in CSV format, where each row represents an image, and the columns represent the image path, label, and extracted features.
 
 \subsection{Data preparation}
 \paragraph{Data collection:}  
-The data is pre-extracted from a pretrained large image recognition model and saved in CSV format. It includes features for the training, validation, and testing sets, specifically:
+The data is pre-extracted from a pretrained large image recognition model and saved in CSV format. It includes features for the training and validation sets, specifically:
 \begin{itemize}
-    \item \texttt{train\_eva02\_large\_patch14\_448.mim\_m38m\_ft\_in22k\_in1k.csv}
-    \item \texttt{val\_eva02\_large\_patch14\_448.mim\_m38m\_ft\_in22k\_in1k.csv}
-    \item \texttt{v2\_eva02\_large\_patch14\_448.mim\_m38m\_ft\_in22k\_in1k.csv}
+    \item Training set: \texttt{train\_eva02\_large\_patch14\_448.mim\_m38m\_ft\_in22k\_in1k.csv}
+    \item Val set 1: \texttt{val\_eva02\_large\_patch14\_448.mim\_m38m\_ft\_in22k\_in1k.csv}
+    \item Val set 2: \texttt{v2\_eva02\_large\_patch14\_448.mim\_m38m\_ft\_in22k\_in1k.csv}
 \end{itemize}
 
-\paragraph{Data cleaning:}  
+\paragraph{Data cleaning and preprocessing:}  
+The datasets used in this project consist of extracted features from a pretrained model, specifically the EVA-02 model. Given that these features have already undergone a rigorous extraction process, minimal data cleaning is required. However, it is essential to remove certain columns that are not relevant for training the model. This includes a predefined list of columns to drop: ['Unnamed: 0', 'path', 'label']. The 'Unnamed: 0' column typically serves as an index and does not contribute to the feature set, while the 'path' and 'label' columns are not utilized as inputs during model training. Therefore, we will ensure these columns are excluded from the dataset to streamline the input features used for training and improve model performance.
 
 
-\paragraph{Numerical data pre-processing:}  
+
 
 \paragraph{Data integration:}  
 The data from the different datasets is organized into separate dataframes for validation. This ensures that each dataset can be independently analyzed for feature importance and classification accuracy.
 
 \subsection{Model planning}
 \paragraph{Feature selection:}  
-Feature importance will be analyzed by evaluating how each feature contributes to classification accuracy across both validation sets. We will select key features that show significant variance between test set 1 (ImageNet) and test set 2 (ImageNetV2).
+The feature selection process will be conducted in two phases:
+\begin{enumerate}
+
+
+    \item Using all 1,024 features for initial model training:
+In the first phase, all 1,024 extracted features from the EVA-02 model will be used as input to train the classifier. This will allow us to establish a baseline by evaluating the validation performance on both val set 1 (ImageNet) and val set 2 (ImageNetV2) using the full feature set. The aim is to observe how well the model generalizes across the two validation sets when trained on the complete set of features, providing a comprehensive understanding of the model's initial accuracy and any potential performance gaps between the two datasets.
+    \item Feature importance analysis using permutation importance:
+In the second phase, permutation importance will be employed to identify which features contribute most to the model's classification accuracy on both validation sets. By measuring the drop in performance when specific features are shuffled, we can evaluate how each feature influences model predictions. This analysis will help us detect key features that show significant variance between val set 1 (ImageNet) and val set 2 (ImageNetV2). Features that are more important for one validation set than the other will be clustered, and the most influential features will be selected.
+\end{enumerate}
+% After clustering the features into three groups based on their importance, the classifier will be retrained using only the most important features. This refined model will then be evaluated again on both validation sets to test whether focusing on the most significant features improves the accuracy and reduces the performance gap between val set 1 and val set 2.
 
 \paragraph{Algorithm selection:}  
+The project involves a combination of classification and clustering algorithms to effectively model the relationship between deep features and image labels, as well as to analyze the variance in feature importance between validation sets. The algorithms selected for each step are as follows:
+
 \begin{itemize}
-    \item \textbf{Classification algorithms:} We will evaluate LightGBM classifiers, to predict image classes based on deep features. This models will be tested across both validation sets to compare their generalization performance.
-    \item \textbf{Clustering algorithms:} K-means clustering will be used to group similar features and identify patterns that differentiate ImageNet and ImageNetV2 samples. This will help in visualizing feature distributions across datasets.
+    \item Classification algorithms: 
+    We will employ LightGBM (Light Gradient Boosting Machine) as the primary classification algorithm. LightGBM is well-suited for large-scale datasets with many features due to its efficiency in handling large amounts of data and its ability to reduce overfitting through gradient-based boosting.  
+    \begin{itemize}
+        \item LightGBM is particularly efficient in memory usage and can handle high-dimensional feature spaces, making it an ideal choice for the 1,024 deep features extracted from the EVA-02 model. 
+        \item We will train the LightGBM classifier on the training dataset and evaluate its performance on both val set 1 (ImageNet) and val set 2 (ImageNetV2). By comparing the classification accuracy on these two validation sets, we will assess the model’s generalization performance across the two distributions.  
+        \item The model will initially be trained using all features, followed by retraining on selected important features identified through feature importance analysis (discussed in the Feature Selection section). This allows us to test whether reducing the input dimensionality by focusing on the most important features improves model accuracy and reduces the performance gap between the two validation sets.
+    \end{itemize}
+    
+    \item Clustering algorithms:
+    K-means clustering will be applied to group features based on their importance, which will be determined through permutation importance analysis. This method will help identify clusters of features that have similar importance across both validation sets and reveal patterns that differentiate feature importance between ImageNet (val set 1) and ImageNetV2 (val set 2).  
+    \begin{itemize}
+        \item The K-means algorithm will be used to partition the 1,024 features into three clusters according to their importance scores. These clusters will represent different levels of feature importance: highly important features, moderately important features, and less important features.  
+        \item Analyzing the composition of these clusters will allow us to investigate whether certain features consistently perform better on one validation set compared to the other, helping us understand the factors contributing to the performance gap between val set 1 and val set 2.
+        \item The clustering results will also assist in visualizing the distribution of feature importance across the two datasets, offering insights into how feature significance varies depending on the dataset, and guiding the selection of features for further classifier training.
+    \end{itemize}
 \end{itemize}
 
 \paragraph{Evaluation criteria:}  
-The models will be evaluated based on their classification accuracy, precision, recall, and F1-score. Additionally, feature importance metrics from LightGBM will provide insights into the most influential features.
+The performance of the models will be assessed using multiple metrics to provide a comprehensive understanding of their classification capabilities. The primary evaluation metrics include:
+\begin{itemize}
+    \item Classification Accuracy: The proportion of correctly predicted instances out of the total instances in the validation set. This metric gives a general overview of model performance.
+    \item Precision: This metric measures the ratio of true positive predictions to the total predicted positives. High precision indicates a low false positive rate, which is crucial when the cost of false positives is high.
+    \item Recall: Also known as sensitivity, recall is the ratio of true positive predictions to the total actual positives. It highlights the model's ability to correctly identify all relevant instances. High recall is important in scenarios where missing a positive instance is costly.
+    \item F1-score: The harmonic mean of precision and recall, the F1-score provides a balance between the two metrics. It is particularly useful in situations where there is an uneven class distribution, as it accounts for both false positives and false negatives.
+    \item Feature/Permutation Importance: LightGBM and sklearn will offer insights into which features have the most influence on model predictions. By analyzing feature importance metrics, we can identify and interpret the key features that contribute to the classification decisions, informing subsequent feature selection processes.
+\end{itemize}
 
 \subsection{Model building}
+
 \paragraph{Data splitting:}  
-We will split the training dataset into training (80\%) and testing (20\%) sets to ensure adequate model hyper-parameter fine tuning validation. The training set will be used to train the classifier, and the validation sets (ImageNet and ImageNetV2) will be used to evaluate model performance.
+To ensure robust model evaluation and hyperparameter tuning, the training dataset will be divided into two distinct subsets:
+\begin{itemize}
+    \item Training Subset (80\%): This subset will be utilized to train the LightGBM classifier. It will include a wide range of samples to ensure the model learns to generalize well across different image features and classes.
+    \item Validation Subset (20\%): This subset will serve as the internal validation set to evaluate model performance during the training process. It will allow us to monitor the model's accuracy and make necessary adjustments to hyperparameters, thereby preventing overfitting. 
+\end{itemize}
+Furthermore, the validation sets from ImageNet (val set 1) and ImageNetV2 (val set 2) will be employed to assess the generalization performance of the trained model across different datasets.
 
 \paragraph{Training:}  
-The models will be trained using deep features extracted from the images. Due to the large size of the dataset (1,280,000 samples with 1,024 features), model optimization will be a key focus, with a particular emphasis on feature selection to reduce computational complexity.
+The training process will involve several key stages to optimize model performance effectively:
+\begin{itemize}
+    \item Initial Training with All Features: In the first round, the LightGBM model will be trained using all available 1,024 deep features extracted from the EVA-02 model. This approach will provide a baseline performance measurement, helping to understand the contribution of each feature to classification accuracy.
+    \item Model Optimization and Feature Selection: Given the large size of the dataset, which comprises 1,280,000 samples with 1,024 features, model optimization will be crucial. After the initial training, feature importance analysis will be conducted to identify the most influential features. This process will involve evaluating how each feature impacts the model's accuracy across both validation sets.
+    %\item Refinement and Retraining: Based on the feature importance results, the model will be refined by selecting a subset of the most important features for retraining. This step aims to reduce computational complexity and improve model efficiency without significantly compromising accuracy. The refined model will then be evaluated on both validation sets to measure its performance improvements.
+    \item Continuous Monitoring and Early Stopping: Throughout the training process, metrics such as classification accuracy, precision, recall, and F1-score will be monitored to ensure the model's performance is improving. An early stopping mechanism will be implemented to halt training if there is no significant improvement over a set number of iterations, thereby conserving resources and preventing overfitting.
+\end{itemize}
+
 
 \subsection{Communicate Results}
-\paragraph{Visualization:}
-Results will be visualized using feature importance plots to highlight which features contribute the most to model performance across the two validation sets. Confusion matrices will also be used to visualize classification errors, while ROC curves and AUC scores will help illustrate the balance between true positive and false positive rates.
 
+\paragraph{Visualization:}  
+To effectively communicate the results of the model evaluations, a variety of visualization techniques will be employed:
+\begin{itemize}
+    \item Feature Importance Plots: These plots will illustrate the contribution of each feature to the model's performance across the two validation sets (ImageNet and ImageNetV2). By clustering the features into three distinct categories based on their importance scores, we can highlight which features are pivotal for classification. The results will be displayed in comparative plots to facilitate visual interpretation of how feature importance varies between the two datasets.
+    \item Confusion Matrices: Confusion matrices will provide a clear visualization of the classification errors made by the model. By showing the true positive, false positive, true negative, and false negative rates, these matrices will help identify specific classes where the model struggles, thereby informing further refinements.
+    \item ROC Curves and AUC Scores: Receiver Operating Characteristic (ROC) curves will be utilized to evaluate the trade-off between true positive rates and false positive rates at various classification thresholds. The Area Under the Curve (AUC) score will serve as a single scalar value representing the model's ability to discriminate between classes. These metrics will provide insights into the model’s performance and robustness across the validation sets.
+\end{itemize}
 \paragraph{Reporting:}  
-A comprehensive report will be prepared detailing the methodology, model evaluations, and key findings. Special attention will be given to the differences between the two test sets and the generalization capabilities of the model. Feature clustering results will also be included to highlight patterns in the dataset.
+A comprehensive report will be compiled to document the entire project, encompassing the methodology, model evaluations, and key findings. This report will include a methodology overview that provides detailed descriptions of the feature extraction process, model selection, training procedures, and hyperparameter tuning methods to give a clear understanding of how the results were obtained. Additionally, a section on evaluation metrics will be included, featuring a detailed analysis of the metrics used, such as classification accuracy, precision, recall, F1-score, and feature importance. This analysis will aid in understanding the model’s performance relative to the datasets. Special emphasis will be placed on comparative analysis, exploring the differences between the two validation sets. Factors contributing to any observed performance gaps will be examined, including the nature of the datasets, the distribution of features, and potential sources of bias. Finally, the report will present the outcomes of the feature clustering process to illustrate patterns and relationships among features, helping to highlight which features are consistently influential across the validation sets and which are more dataset-specific.
 
 \subsection{Operationalize}
+
 \paragraph{Integration:}  
-Although deployment is not part of the assignment, the insights from this project can be leveraged for future integration into image classification workflows, enabling better generalization across datasets.
+While deployment is outside the scope of this assignment, the insights derived from this project can be instrumental in shaping future image classification workflows. Recommendations will be made for integrating the refined model into existing systems to enhance classification capabilities. This will encompass considerations for feature selection, model tuning, and ongoing performance evaluation to improve generalization across various datasets.
 
 \paragraph{Monitoring:}  
-Establish a framework for continuous model monitoring and evaluation to ensure that the model generalizes effectively across new data.
+A framework for continuous model monitoring and evaluation will be proposed to ensure that the model remains effective as new data is introduced. This framework will involve performance tracking through the establishment of metrics to regularly assess the model's accuracy and other key performance indicators in real-time, allowing for timely detection of performance degradation. Feedback loops will be implemented to collect feedback from model predictions, enabling refinement and retraining of the model to adapt to changes in data distributions. Furthermore, periodic reevaluation will be scheduled to conduct regular assessments of the model's performance on new validation sets to verify that it continues to generalize well over time.
 
-\paragraph{Actionable Use:}  
-Design strategies for utilizing the findings to improve the robustness of image classification models in practical applications.
-
-
-\section{Task 2: Main Task Analysis}
+\paragraph{Actionable use:}  
+Strategies will be designed for leveraging the findings from this project to enhance the robustness of image classification models in practical applications. This includes the application of key insights, utilizing identified key features and their importance to inform the design of future models, with a focus on those features that significantly contribute to classification accuracy. Additionally, there will be encouragement for training with diverse datasets to improve model generalization and mitigate biases observed in specific validation sets. Lastly, scalability considerations will be developed to create plans for scaling the model to handle larger datasets while ensuring seamless integration into production environments and maintaining performance standards.
 
 
 
+\section{Task 2: Main Task Experiments \& Analysis}
+\subsection{Datasets Analysis}
+It is widely observed in deep learning that features learned by models on similar, or even different tasks, often transfer remarkably well to new tasks. In the best cases, these features can be directly used by training a classification head on the downstream task while keeping the deep features unchanged. 
+
+These features have been pre-extracted using the pretrained EVA-02 model, a state-of-the-art image classification model, and saved in CSV format. These datasets consist of deep features from the training and validation sets. The model used to extract these features is EVA-02, which is pretrained on a large multi-dataset corpus (Merged-38M) including ImageNet-22k, CC12M, CC3M, COCO (train), ADE20K (train), Object365, and OpenImages, with masked image modeling (MIM) using EVA-CLIP as a teacher. It was then fine-tuned on ImageNet-22k and further on ImageNet-1k. The EVA-02 architecture is based on vision transformers (ViTs) and incorporates techniques such as mean pooling, SwiGLU, Rotary Position Embeddings (ROPE), and extra layer normalization in the MLP layers.
+
+The three datasets are structured as follows:
+
+\begin{itemize}
+    \item Training Set:
+    \begin{itemize}
+        \item File: \texttt{train\_eva02\_large\_patch14\_448.mim\_m38m\_ft\_in22k\_in1k.csv}
+        \item Description: This CSV file contains features extracted from 1,281,167 images, with each image represented by 1,024 feature columns. The file also includes a label column (representing 1,000 classes) and an image path column.
+        \item Data Source: Extracted from the ImageNet-1k training set using the EVA-02 model.
+    \end{itemize}
+    \item Validation Set 1:
+    \begin{itemize}
+        \item File: \texttt{val\_eva02\_large\_patch14\_448.mim\_m38m\_ft\_in22k\_in1k.csv}
+        \item Description: This CSV file contains features for 50,000 images, also represented by 1,024 feature columns, along with a label column (1,000 classes) and an image path column.
+        \item Data Source: Extracted from the ImageNet-1k validation set using the EVA-02 model.
+    \end{itemize}
+    \item Validation Set 2:
+    \begin{itemize}
+        \item File: \texttt{v2\_eva02\_large\_patch14\_448.mim\_m38m\_ft\_in22k\_in1k.csv}
+        \item Description: This CSV file contains features for 10,000 images, represented by 1,024 feature columns, along with a label column (1,000 classes) and an image path column.
+        \item Data Source: Extracted from the ImageNetV2 validation set using the ``MatchedFrequency'' sampling strategy. This dataset aims to closely match the class frequency distribution of the original ImageNet validation set (Validation Set 1).
+    \end{itemize}
+\end{itemize}
+
+These datasets allow for direct comparison between the original ImageNet validation set and the ImageNetV2 ``MatchedFrequency'' set, both of which use features extracted from the EVA-02 model, with the training set based on ImageNet-1k.
+
+\subsection{Model building}
+
+In this project, we selected the LightGBM classifier due to its efficiency and effectiveness in handling large datasets, particularly in the context of multiclass classification tasks. LightGBM, or Light Gradient Boosting Machine, is known for its ability to scale well with large datasets while maintaining high accuracy and speed. Given that our training dataset consists of 1,281,167 images with 1,024 feature columns, utilizing a classifier capable of leveraging such extensive data is critical for achieving optimal results.
+
+To facilitate hyperparameter tuning, we divided the training dataset into two distinct subsets: the training set and an internal validation set. This division enables us to evaluate the model's performance on unseen data during the training process, helping to prevent overfitting and ensuring that the model generalizes well to new examples. In our implementation, we utilized the \texttt{train\_test\_split} function from \texttt{sklearn.model\_selection}. This function allows us to randomly split the \texttt{X\_train\_full} features and \texttt{y\_train\_full} labels into two sets—80\% of the data for training and 20\% for internal validation. 
+
+To optimize the performance of our LightGBM classifier, we employed \texttt{GridSearchCV}, which automates the process of hyperparameter tuning through exhaustive searching over specified parameter values. We defined a comprehensive parameter grid with the following specific hyperparameters and values:
+
+\begin{itemize}
+    \item \texttt{num\_leaves}: [31, 50, 70] - This parameter controls the number of leaves in each tree. A higher value allows the model to capture more complex patterns, which can improve performance, especially with large datasets.
+    
+    \item \texttt{max\_depth}: [10, 15, 20] - Limiting the maximum depth of the trees helps prevent overfitting. A depth of 10 is generally a good starting point for balancing complexity and generalization.
+    
+    \item \texttt{learning\_rate}: [0.01, 0.05, 0.1] - A lower learning rate (e.g., 0.01) allows for more gradual learning, enhancing performance but requiring more boosting iterations. A learning rate of 0.1 is also common for quick convergence.
+    
+    \item \texttt{n\_estimators}: [100, 200, 300] - This represents the number of boosting iterations. Increasing this value can improve performance, but it must be balanced against training time. Starting with 200 is often effective.
+    
+    \item \texttt{min\_data\_in\_leaf}: [20, 50, 100] - This parameter specifies the minimum number of samples required to be in a leaf. A smaller value (e.g., 20) allows for more fine-grained splits, which can help capture complex relationships in the data.
+    
+    \item \texttt{lambda\_l1}: [0.0, 0.1, 0.2] - L1 regularization can help reduce overfitting. Starting with a value of 0.1 is often effective in balancing bias and variance.
+    
+    \item \texttt{lambda\_l2}: [0.0, 0.1, 0.2] - L2 regularization also assists in controlling overfitting. A value of 0.1 can help smooth the model and prevent it from fitting noise in the training data.
+    
+    \item \texttt{random\_state}: [42] - Setting a fixed random state ensures reproducibility in the results.
+\end{itemize}
+
+An important aspect of our training process is the incorporation of early stopping. This technique monitors the model's performance on the internal validation set during training and halts the training process if no improvement is observed over a specified number of rounds. In our case, we set \texttt{early\_stopping\_rounds} to 10, meaning that if the model does not improve in terms of the evaluation metric (multi-logloss) for 10 consecutive rounds, the training will stop. Early stopping helps to prevent overfitting by ensuring that we do not continue training beyond the point where the model starts to lose generalization ability.
+
+After setting up the grid search, the LightGBM model is fit on the training data, using the internal validation set for evaluation. The parameters that yield the highest accuracy during cross-validation are identified and returned, allowing us to select the best model configuration. 
+
+Once the best parameters are found, the model is saved using \texttt{joblib} for future use. This process ensures that the trained model can be easily loaded and utilized for predictions on new datasets without the need to retrain it. 
+
+This structured approach to selecting the LightGBM classifier, optimizing its hyperparameters, and employing early stopping helps us leverage the large-scale dataset effectively while ensuring robust model performance.
+
+\subsection{Performance evaluation}
+
+\subsection{Features analysis}
+
+\subsection{Performance gap hypothesis and testing}
 
 \section{Task 3: Conclusions and Outlook}
 
